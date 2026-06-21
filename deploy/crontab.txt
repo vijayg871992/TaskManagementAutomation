@@ -1,0 +1,7 @@
+# Daily digest at 5:00 AM America/New_York.
+# Install with:  crontab -e   (paste the two lines below)
+#
+# CRON_TZ makes the schedule honour New York time incl. DST. Logs go to a file.
+
+CRON_TZ=America/New_York
+0 5 * * * cd /opt/jarvis-agent && /usr/bin/node scripts/digest.js >> /opt/jarvis-agent/data/digest.log 2>&1

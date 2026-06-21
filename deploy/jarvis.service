@@ -1,0 +1,20 @@
+# systemd unit — keeps the app running and restarts on crash/reboot.
+# Install: sudo cp deploy/jarvis.service /etc/systemd/system/jarvis.service
+#          sudo systemctl daemon-reload && sudo systemctl enable --now jarvis
+
+[Unit]
+Description=JAB Jarvis task agent
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/jarvis-agent
+ExecStart=/usr/bin/node src/server.js
+EnvironmentFile=/opt/jarvis-agent/.env
+Restart=on-failure
+RestartSec=3
+User=jarvis
+Group=jarvis
+
+[Install]
+WantedBy=multi-user.target

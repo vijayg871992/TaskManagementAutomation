@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add JAB Jarvis tab</title>
+  <script src="https://res.cdn.office.net/teams-js/2.19.0/js/MicrosoftTeams.min.js"></script>
+  <style>
+    body { font-family: "Segoe UI", sans-serif; padding: 24px; color: #111; }
+  </style>
+</head>
+<body>
+  <p>This adds <b>JAB Jarvis</b> as a tab in this channel. Click <b>Save</b>.</p>
+  <script>
+    // Configurable-tab setup: tell Teams which URL to render, then enable Save.
+    microsoftTeams.app.initialize().then(function () {
+      microsoftTeams.pages.config.registerOnSaveHandler(function (saveEvent) {
+        microsoftTeams.pages.config.setConfig({
+          entityId: 'jab-jarvis',
+          contentUrl: window.location.origin + '/',
+          websiteUrl: window.location.origin + '/',
+          suggestedDisplayName: 'Jarvis',
+        });
+        saveEvent.notifySuccess();
+      });
+      microsoftTeams.pages.config.setValidityState(true);
+    });
+  </script>
+</body>
+</html>

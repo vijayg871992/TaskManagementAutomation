@@ -1,0 +1,8 @@
+# Caddy reverse proxy with automatic HTTPS.
+# Replace jarvis.yourdomain.com with your real (sub)domain pointed at the VPS.
+# Caddy fetches + renews Let's Encrypt certs automatically.
+
+jarvis.yourdomain.com {
+    encode gzip
+    reverse_proxy 127.0.0.1:3000
+}

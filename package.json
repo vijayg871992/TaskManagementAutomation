@@ -1,0 +1,35 @@
+{
+  "name": "jarvis-agent",
+  "version": "1.0.0",
+  "description": "Jarvis task agent for JAB Enterprises — natural-language task assignment, PWA dashboard, daily digest.",
+  "type": "commonjs",
+  "main": "src/web/app.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "migrate": "knex migrate:latest",
+    "seed": "knex seed:run",
+    "setup": "knex migrate:latest && knex seed:run",
+    "simulate": "node scripts/simulate.js",
+    "digest": "node scripts/digest.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "better-sqlite3": "^11.3.0",
+    "connect-session-knex": "^5.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-session": "^1.18.1",
+    "knex": "^3.1.0",
+    "luxon": "^3.5.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.15",
+    "web-push": "^3.6.7"
+  },
+  "optionalDependencies": {
+    "pg": "^8.13.0"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}

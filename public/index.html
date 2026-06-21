@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="/styles.css" />
+  <title>JAB Jarvis</title>
+</head>
+<body>
+  <div id="app">
+    <!-- Login view -->
+    <section id="login" class="view">
+      <div class="card login-card">
+        <h1>JAB <span class="accent">Jarvis</span></h1>
+        <p class="muted">Sign in with your phone. We'll text you a 6-digit code.</p>
+        <div id="step-phone">
+          <input id="phone" type="tel" placeholder="(646) 787-1339" autocomplete="tel" inputmode="tel" />
+          <div class="hint">Enter your US mobile, e.g. (646) 787-1339</div>
+          <button id="btn-request">Send code</button>
+        </div>
+        <div id="step-code" class="hidden">
+          <input id="code" type="text" inputmode="numeric" maxlength="6" placeholder="6-digit code" />
+          <button id="btn-verify">Verify & sign in</button>
+          <button id="btn-back" class="link">use a different number</button>
+        </div>
+        <div id="login-msg" class="msg"></div>
+      </div>
+    </section>
+
+    <!-- Main app -->
+    <section id="main" class="view hidden">
+      <header class="topbar">
+        <div class="brand">JAB <span class="accent">Jarvis</span></div>
+        <div class="who"><span id="me-name"></span> · <button id="btn-logout" class="link">sign out</button></div>
+      </header>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="jarvis">💬 Jarvis</button>
+        <button class="tab" data-tab="assigned">Assigned to me</button>
+        <button class="tab" data-tab="delegated">I delegated</button>
+        <button class="tab" data-tab="all">All Tasks</button>
+        <button class="tab" data-tab="projects">Projects</button>
+      </nav>
+
+      <!-- Jarvis chat -->
+      <section id="chat-view" class="chat-view">
+        <div id="chat-log" class="chat-log"></div>
+        <div class="composer">
+          <input id="cmd" type="text"
+            placeholder="Hey Jarvis, assign Eric for Cold Calling to pull 400 leads by Monday 4pm" />
+          <button id="btn-send">Send</button>
+        </div>
+        <div class="composer-hint">Jarvis handles task assignments & clarifications only — not general chat.</div>
+      </section>
+
+      <!-- Assigned / Delegated lists -->
+      <main id="list" class="list hidden"></main>
+
+      <!-- All Tasks dashboard -->
+      <section id="dashboard" class="dashboard hidden">
+        <div class="dash-toolbar">
+          <div class="view-toggle">
+            <button class="vbtn active" data-view="board">▦ Board</button>
+            <button class="vbtn" data-view="grid">▤ Grid</button>
+            <button class="vbtn" data-view="list">☰ List</button>
+          </div>
+        </div>
+        <div id="dash-body"></div>
+      </section>
+
+      <!-- Projects -->
+      <section id="projects-view" class="projects-view hidden"></section>
+    </section>
+  </div>
+
+  <!-- Task detail / thread modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <button id="modal-close" class="modal-close">×</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

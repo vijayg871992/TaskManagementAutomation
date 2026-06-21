@@ -1,0 +1,37 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.16",
+  "version": "1.0.0",
+  "id": "REPLACE-WITH-A-GUID",
+  "developer": {
+    "name": "JAB Enterprises",
+    "websiteUrl": "https://jarvis.yourdomain.com",
+    "privacyUrl": "https://jarvis.yourdomain.com/",
+    "termsOfUseUrl": "https://jarvis.yourdomain.com/"
+  },
+  "name": { "short": "JAB Jarvis", "full": "JAB Jarvis Task Agent" },
+  "description": {
+    "short": "Assign and track JAB tasks.",
+    "full": "Open the JAB Jarvis task dashboard inside Teams. Assign tasks by typing 'Hey Jarvis…', track what's assigned to you and what you delegated, and discuss tasks."
+  },
+  "icons": { "color": "color.png", "outline": "outline.png" },
+  "accentColor": "#0b1220",
+  "staticTabs": [
+    {
+      "entityId": "jab-jarvis-personal",
+      "name": "Jarvis",
+      "contentUrl": "https://jarvis.yourdomain.com/",
+      "websiteUrl": "https://jarvis.yourdomain.com/",
+      "scopes": ["personal"]
+    }
+  ],
+  "configurableTabs": [
+    {
+      "configurationUrl": "https://jarvis.yourdomain.com/teams-config.html",
+      "canUpdateConfiguration": true,
+      "scopes": ["team", "groupChat"]
+    }
+  ],
+  "permissions": ["identity"],
+  "validDomains": ["jarvis.yourdomain.com"]
+}
