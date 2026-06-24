@@ -14,12 +14,12 @@ async function logJarvis(userId, { text, status, taskId }) {
 }
 
 async function insert(userId, role, text, status, taskId) {
-  const created_at = nowUtcISO(); // stored for ordering; not shown in UI yet
+  const created_at = nowUtcISO();
   const [row] = await getKnex()('chat_messages')
     .insert({ user_id: userId, role, text, status, task_id: taskId, created_at })
     .returning('id');
   const id = row && typeof row === 'object' ? row.id : row;
-  return { id, role, text, status, task_id: taskId };
+  return { id, role, text, status, task_id: taskId, created_at };
 }
 
 /** Full chat history for one user, oldest first. */
@@ -27,7 +27,7 @@ async function getHistory(userId) {
   return getKnex()('chat_messages')
     .where({ user_id: userId })
     .orderBy('id', 'asc')
-    .select('id', 'role', 'text', 'status', 'task_id');
+    .select('id', 'role', 'text', 'status', 'task_id', 'created_at');
 }
 
 module.exports = { logUser, logJarvis, getHistory };

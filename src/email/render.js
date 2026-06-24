@@ -9,56 +9,99 @@ function esc(s) {
     .replace(/>/g, '&gt;');
 }
 
+const STATUS_LABELS = { open: 'Not started', in_progress: 'In progress', done: 'Completed' };
+const STATUS_COLORS = { open: '#6b7280', in_progress: '#2563eb', done: '#16a34a' };
+
 function statusBadge(status) {
-  const map = { open: '#6b7280', in_progress: '#2563eb', done: '#16a34a' };
-  const color = map[status] || '#6b7280';
-  return `<span style="background:${color};color:#fff;border-radius:10px;padding:1px 8px;font-size:12px;">${esc(
-    status
-  )}</span>`;
+  const color = STATUS_COLORS[status] || '#6b7280';
+  const label = STATUS_LABELS[status] || status;
+  return `<span style="background:${color};color:#fff;border-radius:10px;padding:2px 10px;font-size:12px;white-space:nowrap;">${esc(label)}</span>`;
 }
 
-function taskRow(t) {
-  return `
-    <tr>
-      <td style="padding:8px 10px;border-bottom:1px solid #eee;">
-        <div style="font-weight:600;">${esc(t.description)}</div>
-        <div style="color:#555;font-size:13px;">
-          ${esc(t.project_name)} · due ${esc(formatDeadline(t.deadline_utc))} · ${statusBadge(t.status)}
-        </div>
-        <div style="color:#374151;font-size:13px;margin-top:4px;">📝 ${esc(t.notesSummary)}</div>
-        ${t.attachmentCount ? `<div style="color:#374151;font-size:13px;">📎 ${t.attachmentCount} reference doc(s)</div>` : ''}
-      </td>
-    </tr>`;
+const TD = 'style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;vertical-align:top;"';
+const TH = 'style="padding:8px 12px;background:#f3f4f6;font-size:12px;font-weight:600;color:#374151;text-align:left;border-bottom:2px solid #d1d5db;"';
+
+function delegatedRow(t) {
+  return `<tr>
+    <td ${TD}>${esc(t.project_name)}</td>
+    <td ${TD}>${esc(t.assignee_name)}</td>
+    <td ${TD} style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;vertical-align:top;font-weight:600;">${esc(t.description)}</td>
+    <td ${TD}>${statusBadge(t.status)}</td>
+    <td ${TD} style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;vertical-align:top;white-space:nowrap;">${esc(formatDeadline(t.deadline_utc))}</td>
+    <td ${TD} style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;vertical-align:top;color:#555;">${esc(t.notesSummary || '—')}${t.attachmentCount ? ` <span style="color:#6b7280;">(${t.attachmentCount} doc${t.attachmentCount > 1 ? 's' : ''})</span>` : ''}</td>
+  </tr>`;
 }
 
-function section(title, who, tasks) {
-  if (!tasks.length) {
-    return `<h3 style="margin:16px 0 6px;">${esc(title)}</h3>
-      <div style="color:#888;font-size:14px;">Nothing here today.</div>`;
+function assignedRow(t) {
+  return `<tr>
+    <td ${TD}>${esc(t.project_name)}</td>
+    <td ${TD}>${esc(t.assigner_name)}</td>
+    <td ${TD} style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;vertical-align:top;font-weight:600;">${esc(t.description)}</td>
+    <td ${TD}>${statusBadge(t.status)}</td>
+    <td ${TD} style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;vertical-align:top;white-space:nowrap;">${esc(formatDeadline(t.deadline_utc))}</td>
+    <td ${TD} style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;vertical-align:top;color:#555;">${esc(t.notesSummary || '—')}${t.attachmentCount ? ` <span style="color:#6b7280;">(${t.attachmentCount} doc${t.attachmentCount > 1 ? 's' : ''})</span>` : ''}</td>
+  </tr>`;
+}
+
+function tableWrap(headers, rows, emptyMsg) {
+  if (!rows.length) {
+    return `<p style="color:#888;font-size:14px;margin:8px 0 16px;">${emptyMsg}</p>`;
   }
-  return `<h3 style="margin:16px 0 6px;">${esc(title)} <span style="color:#888;font-weight:400;">(${tasks.length})</span></h3>
-    <table style="width:100%;border-collapse:collapse;">${tasks.map(taskRow).join('')}</table>`;
+  const ths = headers.map((h) => `<th ${TH}>${h}</th>`).join('');
+  return `<table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+    <thead><tr>${ths}</tr></thead>
+    <tbody>${rows.join('')}</tbody>
+  </table>`;
 }
 
 /**
  * @param {object} d  - { user, delegated:[], assigned:[] } (tasks carry .notesSummary)
  */
 function renderDigest(d) {
-  const subject = `Your JAB Jarvis digest — ${d.delegated.length + d.assigned.length} task(s)`;
-  const html = `<div style="font-family:Segoe UI,Arial,sans-serif;max-width:640px;margin:auto;color:#111;">
-    <h2 style="margin:0 0 4px;">Good morning, ${esc(d.user.name)} 👋</h2>
-    <div style="color:#888;font-size:13px;">Daily task digest · ${new Date().toDateString()}</div>
-    ${section('Tasks you delegated', d.user.name, d.delegated)}
-    ${section('Tasks assigned to you', d.user.name, d.assigned)}
-    <div style="color:#aaa;font-size:12px;margin-top:20px;">JAB Jarvis · reply in the app to discuss any task.</div>
+  const total = d.delegated.length + d.assigned.length;
+  const subject = `Your JAB Jarvis digest — ${total} task(s) · ${new Date().toDateString()}`;
+
+  const delegatedTable = tableWrap(
+    ['Project Name', 'Assigned To', 'Task Name', 'Status', 'Due Date', 'Notes'],
+    d.delegated.map(delegatedRow),
+    'No open delegated tasks today.'
+  );
+
+  const assignedTable = tableWrap(
+    ['Project Name', 'Assigned By', 'Task Name', 'Status', 'Due Date', 'Notes'],
+    d.assigned.map(assignedRow),
+    'No open tasks assigned to you today.'
+  );
+
+  const html = `<div style="font-family:Segoe UI,Arial,sans-serif;max-width:800px;margin:auto;color:#111;padding:20px;">
+    <h2 style="margin:0 0 4px;color:#1e3a5f;">Good morning, ${esc(d.user.name)} 👋</h2>
+    <p style="color:#888;font-size:13px;margin:0 0 24px;">Daily task digest &mdash; ${new Date().toDateString()}</p>
+
+    <h3 style="margin:0 0 10px;color:#1e3a5f;border-bottom:2px solid #e5e7eb;padding-bottom:6px;">
+      Tasks You Delegated <span style="color:#888;font-weight:400;">(${d.delegated.length})</span>
+    </h3>
+    ${delegatedTable}
+
+    <h3 style="margin:0 0 10px;color:#1e3a5f;border-bottom:2px solid #e5e7eb;padding-bottom:6px;">
+      Tasks Assigned to You <span style="color:#888;font-weight:400;">(${d.assigned.length})</span>
+    </h3>
+    ${assignedTable}
+
+    <p style="color:#aaa;font-size:12px;margin-top:24px;border-top:1px solid #e5e7eb;padding-top:12px;">
+      JAB Jarvis &mdash; reply in the app to discuss any task.
+    </p>
   </div>`;
 
   const text =
     `Good morning, ${d.user.name}\n\n` +
     `TASKS YOU DELEGATED (${d.delegated.length}):\n` +
-    d.delegated.map((t) => ` - ${t.description} [${t.project_name}] due ${formatDeadline(t.deadline_utc)} (${t.status}) — ${t.notesSummary}`).join('\n') +
+    (d.delegated.length
+      ? d.delegated.map((t) => ` - [${t.project_name}] ${t.description} → ${t.assignee_name} | ${t.status} | due ${formatDeadline(t.deadline_utc)} | ${t.notesSummary || 'no notes'}`).join('\n')
+      : '  Nothing here today.') +
     `\n\nTASKS ASSIGNED TO YOU (${d.assigned.length}):\n` +
-    d.assigned.map((t) => ` - ${t.description} [${t.project_name}] due ${formatDeadline(t.deadline_utc)} (${t.status}) — ${t.notesSummary}`).join('\n') +
+    (d.assigned.length
+      ? d.assigned.map((t) => ` - [${t.project_name}] ${t.description} from ${t.assigner_name} | ${t.status} | due ${formatDeadline(t.deadline_utc)} | ${t.notesSummary || 'no notes'}`).join('\n')
+      : '  Nothing here today.') +
     `\n`;
 
   return { subject, html, text };

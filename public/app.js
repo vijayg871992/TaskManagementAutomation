@@ -1,8 +1,9 @@
 'use strict';
 
+const BASE_PATH = '/jarvis';
 const $ = (sel) => document.querySelector(sel);
 const api = async (url, opts = {}) => {
-  const res = await fetch(url, {
+  const res = await fetch(BASE_PATH + url, {
     headers: { 'Content-Type': 'application/json' },
     credentials: 'same-origin',
     ...opts,
@@ -67,19 +68,25 @@ function switchTab(tab) {
 document.querySelectorAll('.tab').forEach((t) => { t.onclick = () => switchTab(t.dataset.tab); });
 
 // ---------- Jarvis chat ----------
+function formatTime(isoString) {
+  if (!isoString) return '';
+  const d = new Date(isoString);
+  return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
 async function loadChat() {
   const log = $('#chat-log');
   const history = await api('/api/chat');
   log.innerHTML = history.length
-    ? history.map((m) => chatBubbleHtml(m.role, m.text, m.status, m.task_id)).join('')
+    ? history.map((m) => chatBubbleHtml(m.role, m.text, m.status, m.task_id, m.created_at)).join('')
     : `<div class="chat-empty">👋 Type an instruction like<br><b>"Hey Jarvis, assign Eric for Cold Calling to pull 400 leads by Monday 4pm"</b></div>`;
   log.scrollTop = log.scrollHeight;
 }
-function chatBubbleHtml(role, text, status, taskId) {
-  if (role === 'user') return `<div class="chat-row user"><div class="chat-bubble user">${esc(text)}</div></div>`;
+function chatBubbleHtml(role, text, status, taskId, timestamp) {
+  const time = timestamp ? `<span class="chat-time">${formatTime(timestamp)}</span>` : '';
+  if (role === 'user') return `<div class="chat-row user"><div class="chat-bubble user">${esc(text)}${time}</div></div>`;
   const icon = status === 'created' ? '✅' : status === 'need_project' ? '❓' : status === 'error' ? '⛔' : '🤖';
   const link = taskId ? ` <a class="chat-tasklink" data-task="${taskId}">open task</a>` : '';
-  return `<div class="chat-row jarvis"><div class="chat-bubble jarvis ${status || ''}">${icon} ${esc(text)}${link}</div></div>`;
+  return `<div class="chat-row jarvis"><div class="chat-bubble jarvis ${status || ''}">${icon} ${esc(text)}${link}${time}</div></div>`;
 }
 function appendChat(html) { const log = $('#chat-log'); log.insertAdjacentHTML('beforeend', html); log.scrollTop = log.scrollHeight; }
 
@@ -87,7 +94,8 @@ async function submitCommand() {
   const text = $('#cmd').value.trim();
   if (!text) return;
   resumeAudio();
-  appendChat(chatBubbleHtml('user', text));
+  const now = new Date().toISOString();
+  appendChat(chatBubbleHtml('user', text, null, null, now));
   $('#cmd').value = '';
   appendChat(`<div class="chat-row jarvis" id="thinking"><div class="chat-bubble jarvis">🤖 …</div></div>`);
   const r = await api('/api/command', { method: 'POST', body: JSON.stringify({ text }) });
@@ -282,7 +290,7 @@ async function openTask(id) {
     const f = e.target.files[0]; if (!f) return;
     const fd = new FormData(); fd.append('file', f);
     $('#attachments').innerHTML = '<div class="muted">Uploading…</div>';
-    const res = await fetch(`/api/tasks/${id}/attachments/file`, { method: 'POST', credentials: 'same-origin', body: fd });
+    const res = await fetch(`${BASE_PATH}/api/tasks/${id}/attachments/file`, { method: 'POST', credentials: 'same-origin', body: fd });
     const json = await res.json();
     $('#attachments').innerHTML = renderAttachments(id, json.attachments || []);
     bindAttachmentDeletes(id);
@@ -314,7 +322,7 @@ function msgBubble(m) { return `<div class="bubble"><div class="who">${esc(m.aut
 function renderAttachments(taskId, list) {
   if (!list || !list.length) return '<div class="muted">No reference docs yet.</div>';
   return list.map((a) => {
-    const dl = `/api/tasks/${taskId}/attachments/${a.id}/download`;
+    const dl = `${BASE_PATH}/api/tasks/${taskId}/attachments/${a.id}/download`;
     let inner;
     if (a.kind === 'image') inner = `<a href="${dl}" target="_blank"><img class="att-thumb" src="${dl}" alt="${esc(a.label)}"></a><span class="att-label">${esc(a.label)}</span>`;
     else if (a.kind === 'link') inner = `🔗 <a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.label)}</a>`;
@@ -389,5 +397,5 @@ function handleDeepLink() {
 }
 
 // ---------- Boot ----------
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register(BASE_PATH + '/sw.js').catch(() => {});
 checkSession();

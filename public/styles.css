@@ -74,6 +74,7 @@ button:active { transform: translateY(1px); }
 .chat-bubble .chips { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
 .chat-bubble .chip { background: var(--panel2); border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px; cursor: pointer; }
 .chat-tasklink { display: inline-block; margin-left: 6px; color: var(--accent); cursor: pointer; text-decoration: underline; }
+.chat-time { display: block; font-size: 10px; opacity: 0.5; margin-top: 4px; }
 .composer { display: flex; gap: 8px; padding: 10px 16px 4px; border-top: 1px solid var(--border); }
 .composer input { margin: 0; }
 .composer button { white-space: nowrap; }
